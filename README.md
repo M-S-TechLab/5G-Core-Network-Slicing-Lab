@@ -40,16 +40,24 @@ All components run on the same Ubuntu guest. Control-plane signaling uses NGAP/S
 
 | Item | Value |
 | --- | --- |
-| Operating system | Ubuntu 22.04 LTS |
-| Virtualization | VirtualBox or UTM |
-| Core network | Open5GS (laboratory version 2.8.0) |
-| RAN and UE emulator | UERANSIM |
-| Subscriber database | MongoDB |
+| Operating system | Ubuntu 22.04.4 LTS |
+| Virtualization | VirtualBox (7.0+) or UTM (4.5+) |
+| 5G Core network | Open5GS v2.8.0 |
+| RAN and UE emulator | UERANSIM v3.2.6 |
+| Subscriber database | MongoDB Community Server 8.0.x |
+| WebUI runtime | Node.js v20.x LTS |
+| VoIP PBX & Softphone | Asterisk 18.10.0 LTS & Twinkle 1.10.2 |
+| Cloud storage | Nextcloud (Snap 28/29) |
+| MQTT message broker | Eclipse Mosquitto 2.0.11 |
+| Throughput benchmark | iPerf 3.9 |
 | MCC / MNC | `999` / `70` |
 | TAC | `1` |
 | DNN | `internet` |
-| UEs | Two primary simulated subscribers |
+| UEs | Simulated subscribers (UE1, UE2, UE3) |
 | Network slices | SST `1`, `2`, `3` |
+
+> [!IMPORTANT]
+> **UERANSIM Version Requirement:** You **must** use a modern version of UERANSIM that supports Linux network namespaces (recommended **v3.2.6**, minimum v3.2.0). Do **not** use older legacy versions, as they lack the `useNamespace: true` directive required to isolate PDU session interfaces and route distinct application traffic over individual network slices concurrently.
 
 ### Network slices and QoS
 
@@ -108,7 +116,7 @@ The technical project report describes six experiments:
 | --- | --- | --- |
 | Unauthorized UE | Reject registration of an IMSI absent from MongoDB | [Test 01](tests/01-unauthorized-ue.md) |
 | Unsupported network slice | Request SST 4, which is not authorized | [Test 02](tests/02-unsupported-network-slice.md) |
-| VoIP over SST 2 | SIP/RTP call using Asterisk and Twinkle | [Test 03](tests/03-voip-urllc.md) |
+| VoIP over SST 2 | SIP/RTP call with DTMF tones (1234) and session teardown (BYE) using Asterisk and Twinkle | [Test 03](tests/03-voip-urllc.md) |
 | File transfer over SST 1 | WebDAV upload and download using Nextcloud | [Test 04](tests/04-nextcloud-embb.md) |
 | MQTT over SST 3 | Publish/subscribe sensor telemetry with Mosquitto | [Test 05](tests/05-mqtt-miot.md) |
 | Performance measurements | iperf3 uplink/downlink tests on all three slices | [Test 06](tests/06-iperf3-performance.md) |
@@ -130,11 +138,14 @@ The original report includes measured throughput values and application-level ob
 | Location | Contents |
 | --- | --- |
 | [`configs/open5gs/`](configs/open5gs/) | Open5GS Network Function YAML files and laboratory subscriber data |
-| [`configs/ueransim/`](configs/ueransim/) | gNB, UE1, and UE2 configurations |
+| [`configs/ueransim/`](configs/ueransim/) | gNB, UE1, UE2, and UE3 configurations |
+| [`configs/systemd/`](configs/systemd/) | Systemd service units for secondary SMF/UPF slices and iperf3 |
+| [`configs/asterisk/`](configs/asterisk/) | PBX PJSIP and dialplan configurations for VoIP experiment (SST 2) |
+| [`configs/twinkle/`](configs/twinkle/) | Twinkle softphone profile configurations for UE1 and UE2 |
 | [`docs/`](docs/) | Installation, network configuration, and slicing documentation |
 | [`tests/`](tests/) | Startup instructions and six experimental procedures |
-| [`images/`](images/) | Architecture diagrams and screenshots, when available |
-| [`scripts/`](scripts/) | Optional executable helper scripts, when available |
+| [`images/`](images/) | Architecture diagrams and documentation |
+| [`scripts/`](scripts/) | Network interface setup script and UE provisioning automation |
 
 ## Technology references
 

@@ -166,7 +166,7 @@ sudo apt install -y nodejs
 curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
 
-### 5.3 Access the WebUI
+### 5.3 Access and Provisioning via WebUI (Port 9999)
 
 Open a web browser on the Ubuntu machine and navigate to:
 
@@ -174,11 +174,111 @@ Open a web browser on the Ubuntu machine and navigate to:
 http://localhost:9999
 ```
 
-The WebUI allows administrators to configure subscriber profiles, including IMSI, authentication parameters, DNN, network slices, and QoS policies.
+#### Default Credentials
+* **Username:** `admin`
+* **Password:** `1423`
 
-Change any default administrative credentials before exposing the WebUI to other systems.
+*(Change default credentials in production environments).*
 
-## 6. Installation Verification
+#### Single-Subscriber Manual Provisioning
+The WebUI allows interactive creation and editing of individual subscriber profiles:
+
+1. Click on **Subscribers** in the top navigation bar.
+2. Click the **+** (New Subscriber) button.
+3. Fill in the **Subscriber Identity**:
+   * **IMSI:** `999700000000001`
+4. Configure **Security Credentials**:
+   * **K:** `465B5CE8 B199B49F AA5F0A2E E238A6BC`
+   * **OPc:** `E8ED289D EBA952E4 283B54E8 8E6183CA`
+   * **AMF:** `8000`
+   * **SQN:** `000000000000` (or leave default counter)
+5. Add the **Three Network Slices**:
+   * **Slice 1 (eMBB):**
+     * SST: `1`, Check *Default S-NSSAI*.
+     * Session APN/DNN: `internet`, Type: `IPv4`.
+     * QoS: 5QI `6`, ARP Priority `4`.
+     * Session-AMBR: Downlink `1 Gbps` (`1` / `Gbps`), Uplink `100 Mbps` (`100` / `Mbps`).
+   * **Slice 2 (URLLC):**
+     * Click *+ S-NSSAI*.
+     * SST: `2`, Uncheck *Default S-NSSAI*.
+     * Session APN/DNN: `internet`, Type: `IPv4`.
+     * QoS: 5QI `1`, ARP Priority `1`.
+     * Session-AMBR: Downlink `100 Mbps`, Uplink `100 Mbps`.
+   * **Slice 3 (MIoT):**
+     * Click *+ S-NSSAI*.
+     * SST: `3`, Uncheck *Default S-NSSAI*.
+     * Session APN/DNN: `internet`, Type: `IPv4`.
+     * QoS: 5QI `70`, ARP Priority `12`.
+     * Session-AMBR: Downlink `1 Mbps`, Uplink `512 Kbps`.
+6. Click **Save** at the bottom of the page.
+
+> **Note:** Manual WebUI entry is recommended for inspection and individual subscriber testing. For automated bulk provisioning, use the included Python script [`../scripts/provision.py`](../scripts/provision.py) or import [`../configs/open5gs/mongodb_subscribers.json`](../configs/open5gs/mongodb_subscribers.json).
+
+## 6. UERANSIM Installation and Build
+
+UERANSIM simulates both the 5G gNodeB (gNB) and User Equipment (UE) terminals over a simulated radio link.
+
+### 6.1 Install Build Dependencies
+
+```bash
+sudo apt update
+sudo apt install -y make gcc g++ libsctp-dev lksctp-tools iproute2 cmake git
+```
+
+### 6.2 Clone and Build UERANSIM (v3.2.6)
+
+Clone UERANSIM into the current user's home directory:
+
+```bash
+cd "$HOME"
+git clone -b v3.2.6 https://github.com/aligungr/UERANSIM
+cd "$HOME/UERANSIM"
+make -j"$(nproc)"
+```
+
+Verify that the executables were built:
+
+```bash
+ls -lh "$HOME/UERANSIM/build/"nr-*
+```
+*(You should see `nr-gnb`, `nr-ue`, `nr-cli`, and `nr-binder`).*
+
+### 6.3 Deploy Laboratory Configurations
+
+Copy the laboratory configuration files from this repository:
+
+```bash
+# 1. Deploy Open5GS core configurations
+sudo cp configs/open5gs/*.yaml /etc/open5gs/
+
+# 2. Deploy UERANSIM configurations
+mkdir -p "$HOME/UERANSIM/config"
+cp configs/ueransim/*.yaml "$HOME/UERANSIM/config/"
+
+# 3. Restart Open5GS Core Services
+sudo systemctl restart open5gs-nrfd open5gs-scpd open5gs-amfd open5gs-smfd open5gs-upfd open5gs-ausfd open5gs-udmd open5gs-udrd open5gs-pcfd open5gs-nssfd
+```
+
+## 7. Experiment Applications and Tools Installation
+
+The laboratory experiments require additional application servers, softphones, and testing tools:
+
+```bash
+sudo apt update
+# 1. Performance test and IoT tools
+sudo apt install -y iperf3 mosquitto mosquitto-clients
+
+# 2. VoIP PBX and Softphone (SST 2 / URLLC)
+sudo apt install -y asterisk twinkle
+
+# 3. Python provisioning dependencies
+sudo apt install -y python3-yaml python3-pymongo
+
+# 4. Nextcloud (SST 1 / eMBB)
+sudo snap install nextcloud
+```
+
+## 8. Installation Verification
 
 Verify that MongoDB is running:
 
@@ -195,7 +295,8 @@ systemctl list-units 'open5gs-*' --type=service
 Inspect the installed configuration files:
 
 ```bash
-ls /etc/open5gs/
+ls -l /etc/open5gs/
+ls -l "$HOME/UERANSIM/config/"
 ```
 
 Inspect the Open5GS installation version:
@@ -204,25 +305,10 @@ Inspect the Open5GS installation version:
 dpkg-query -W open5gs
 ```
 
-The laboratory used Open5GS 2.8.0. Installing from the `latest` PPA does not guarantee the same version. For exact reproduction, the installed version should be checked and a compatible version selected.
-
-## 7. Next Steps
-
-After installing Open5GS, the 5G Core Network must be configured to support the laboratory topology.
-
-The following steps are documented separately:
-
-- Configuration of PLMN, TAC, and supported S-NSSAIs.
-- Configuration of the AMF, SMFs, and UPFs.
-- Setup of three network slices.
-- Creation of subscriber profiles in MongoDB.
-- Configuration of TUN interfaces, IP forwarding, and NAT.
-- Installation and configuration of UERANSIM.
-- Validation of UE registration and PDU Session establishment.
-
 ## References
 
 - [Open5GS Official Quickstart](https://open5gs.org/open5gs/docs/guide/01-quickstart/)
 - [Open5GS Official Documentation](https://open5gs.org/open5gs/docs/)
+- [UERANSIM Repository](https://github.com/aligungr/UERANSIM)
 - [Ubuntu 22.04 LTS](https://releases.ubuntu.com/22.04/)
 - [MongoDB Documentation](https://www.mongodb.com/docs/)

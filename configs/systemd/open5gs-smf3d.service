@@ -1,0 +1,15 @@
+[Unit]
+Description=Open5GS SMF Daemon (SST 3 - MIoT)
+Documentation=https://open5gs.org/open5gs/docs/
+After=network.target open5gs-nrfd.service open5gs-scpd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/open5gs-smfd -c /etc/open5gs/smf-sst3.yaml
+Restart=always
+RestartSec=2
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

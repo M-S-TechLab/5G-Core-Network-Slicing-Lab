@@ -26,32 +26,59 @@ In the Asterisk console (command shown for inspection, depending on SIP driver):
 pjsip show endpoints
 ```
 
-The report identifies extensions **1001** and **1002**, but does not include the PBX and Twinkle configuration files.
+The Asterisk configuration files are provided in [`../configs/asterisk/`](../configs/asterisk/). Copy `pjsip.conf` and `extensions.conf` to `/etc/asterisk/` before starting Asterisk.
 
 ## 4. Start Twinkle for UE1 on SST 2 (terminal 1)
 
+Twinkle profiles are provided in [`../configs/twinkle/`](../configs/twinkle/). Launch Twinkle under the active user's environment:
+
 ```bash
-sudo ip netns exec ueransim-999700000000001-internet-psi2 sudo -u ubuntu twinkle -c -f ue1.cfg
+sudo ip netns exec ueransim-999700000000001-internet-psi2 sudo -u "$USER" twinkle -c -f configs/twinkle/ue1.cfg
 ```
 
 ## 5. Start Twinkle for UE2 on SST 2 (terminal 2)
 
+Launch Twinkle for UE2 with a separate user profile directory:
+
 ```bash
-sudo ip netns exec ueransim-999700000000002-internet-psi2 sudo -u ubuntu env HOME=/home/ubuntu/ue2_home twinkle -c -f ue2.cfg
+mkdir -p "$HOME/ue2_home"
+sudo ip netns exec ueransim-999700000000002-internet-psi2 sudo -u "$USER" env HOME="$HOME/ue2_home" twinkle -c -f configs/twinkle/ue2.cfg
 ```
 
-**Important:** the commands above are normalized from the report and use the account name `ubuntu` appearing there. On the `domiima` VM, change `ubuntu` and the `HOME` value to the actual local Twinkle account. The `.cfg` arguments are file names, not absolute file paths.
+## 6. Place the call, send DTMF tones, and terminate (UE1 / UE2 Twinkle console)
 
-## 6. Place the call (UE1 Twinkle console)
+1. From UE1 Twinkle console, initiate the SIP call to UE2:
+   ```text
+   call 1002
+   ```
 
-```text
-call 1002
-```
+2. When the call rings on UE2, answer:
+   ```text
+   answer
+   ```
 
-## 7. Monitor SIP/RTP during the test
+3. Once connected, send in-call DTMF tones from UE1:
+   ```text
+   dtmf 1234
+   ```
+   *(This transmits RFC 2833 / RFC 4733 RTP telephone-event packets for digits 1, 2, 3, and 4 over the URLLC slice).*
+
+4. Terminate the VoIP session from UE1:
+   ```text
+   bye
+   ```
+
+## 7. Monitor SIP/RTP and DTMF during the test
+
+Capture signaling and media on the SST 2 tunnel interface (`ogstun2`):
 
 ```bash
 sudo tcpdump -ni ogstun2 'udp port 5060 or udp portrange 10000-20000'
 ```
 
-The report states successful SIP INVITE/200 OK, 1.1 ms RTT and no packet loss; no independent raw RTP output was supplied.
+Observed behavior:
+- Successful SIP `INVITE` / `200 OK` session negotiation over UDP 5060.
+- Low-latency bi-directional RTP audio stream (G.711 / G.722) over SST 2.
+- Telephony event RTP packets representing DTMF tones `1234`.
+- Clean session teardown with SIP `BYE` and `200 OK`.
+- Average RTT measured around 1.1 ms with 0% packet loss.

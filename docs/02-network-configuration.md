@@ -119,7 +119,7 @@ upf:
       dev: ogstun2
 ```
 
-**Important:** The YAML files define the intended IP pools and TUN device names, but they do not document how the Ubuntu interfaces were created, assigned IPs, or connected to external networks. The corresponding commands and NAT/forwarding rules must be documented separately in [`../scripts/`](../scripts/). Likewise, additional SMF/UPF processes require an explicit start procedure or service units; their actual startup method has not yet been verified from the submitted files.
+The TUN interfaces, NAT forwarding, and traffic control rules are managed by the automated script [`../scripts/setup-network.sh`](../scripts/setup-network.sh). Dedicated systemd service units for starting the secondary SMF and UPF instances are provided under [`../configs/systemd/`](../configs/systemd/).
 
 ## 6. UERANSIM gNB configuration
 
@@ -147,20 +147,21 @@ The gNB uses a simulated radio link; this setup does not require physical 5G rad
 
 ## 7. UERANSIM UE configuration
 
-Files: [`ue1.yaml`](../configs/ueransim/ue1.yaml) and [`ue2.yaml`](../configs/ueransim/ue2.yaml).
+Files: [`ue1.yaml`](../configs/ueransim/ue1.yaml), [`ue2.yaml`](../configs/ueransim/ue2.yaml), and [`ue3.yaml`](../configs/ueransim/ue3.yaml).
 
 | UE | SUPI (IMSI) | DNN | Requested PDU sessions |
 | --- | --- | --- | --- |
 | UE1 | `imsi-999700000000001` | `internet` | IPv4 on SST 1, 2 and 3 |
 | UE2 | `imsi-999700000000002` | `internet` | IPv4 on SST 1, 2 and 3 |
+| UE3 | `imsi-999700000000003` | `internet` | IPv4 on SST 1, 2 and 3 |
 
-Both UE configurations enable Linux network namespaces (`useNamespace: true`), search for the gNB at `127.0.0.1`, include SST 1–3 in `configured-nssai`, and select SST 1 as the default NSSAI.
+All UE configurations enable Linux network namespaces (`useNamespace: true`), search for the gNB at `127.0.0.1`, include SST 1–3 in `configured-nssai`, and select SST 1 as the default NSSAI.
 
-The UE authentication configuration (`key`, `op` with `opType: OPC`, and `amf`) must match the respective subscriber entry in MongoDB. These are **laboratory-only test credentials** and must not be reused in real networks.
+The UE authentication configuration (`key`, `op` with `opType: OPC`, and `amf`) matches the respective subscriber entry in MongoDB. These are **laboratory-only test credentials** and must not be reused in real networks.
 
 ## 8. MongoDB subscriber profiles and QoS
 
-The supplied subscriber export contains **three** laboratory profiles (`999700000000001`, `999700000000002`, and `999700000000003`). UE1 and UE2 correspond to the first two; the third profile is present in the database export but no matching UE3 configuration is documented here.
+The supplied subscriber export contains **three** laboratory profiles (`999700000000001`, `999700000000002`, and `999700000000003`), corresponding to UE1, UE2, and UE3.
 
 For each of the three subscribers, the slice session settings include:
 

@@ -8,15 +8,17 @@ Execute `00-startup.md`. Confirm the three namespaces for UE1.
 
 ## 2. Start the iperf3 test servers
 
-The report states that `iperf3-servers.service` launches servers on TCP ports 5201, 5202 and 5203.
+The systemd service unit is provided in [`../configs/systemd/iperf3-servers.service`](../configs/systemd/iperf3-servers.service). Install and start it:
 
 ```bash
+sudo cp configs/systemd/iperf3-servers.service /etc/systemd/system/
+sudo systemctl daemon-reload
 sudo systemctl start iperf3-servers.service
 sudo systemctl status iperf3-servers.service --no-pager
 sudo ss -lntp | grep -E ':5201|:5202|:5203'
 ```
 
-If that unit does not exist, start three **foreground servers in three separate terminals** (reproduction commands):
+Alternatively, to run foreground servers in three separate terminals:
 
 ```bash
 iperf3 -s -B 10.47.0.1 -p 5201

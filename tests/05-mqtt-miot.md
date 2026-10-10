@@ -20,15 +20,15 @@ Mosquitto must accept clients addressed to `10.47.0.1:1883` (not only `127.0.0.1
 
 ```bash
 sudo ip netns exec ueransim-999700000000002-internet-psi3 \
-  mosquitto_sub -h 10.47.0.1 -p 1883 -t 'sensori/telemetria' -v
+  mosquitto_sub -h 10.47.0.1 -p 1883 -t 'sensors/telemetry' -v
 ```
 
 ## 4. Publish a telemetry message from UE1 (terminal 2)
 
 ```bash
 sudo ip netns exec ueransim-999700000000001-internet-psi3 \
-  mosquitto_pub -h 10.47.0.1 -p 1883 -t 'sensori/telemetria' \
-  -m '{"temp":22.4,"umidita":60}'
+  mosquitto_pub -h 10.47.0.1 -p 1883 -t 'sensors/telemetry' \
+  -m '{"temp":22.4,"humidity":60}'
 ```
 
 ## 5. Repeat periodically (optional reproduction procedure)
@@ -36,8 +36,8 @@ sudo ip netns exec ueransim-999700000000001-internet-psi3 \
 ```bash
 while true; do
   sudo ip netns exec ueransim-999700000000001-internet-psi3 \
-    mosquitto_pub -h 10.47.0.1 -p 1883 -t 'sensori/telemetria' \
-    -m '{"temp":22.4,"umidita":60}'
+    mosquitto_pub -h 10.47.0.1 -p 1883 -t 'sensors/telemetry' \
+    -m '{"temp":22.4,"humidity":60}'
   sleep 2
 done
 ```

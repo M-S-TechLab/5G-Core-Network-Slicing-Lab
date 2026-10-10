@@ -2,33 +2,40 @@
 
 The following commands start the existing installation. They **do not install or overwrite configuration files**. Execute the UERANSIM commands from the directory where the executable and `.yaml` files are accessible. Use the appropriate relative YAML filename for your environment.
 
-## 1. Optional check of dedicated SMF/UPF instances
+## 1. Start dedicated SMF/UPF instances for SST 2 and SST 3
 
-The project also uses dedicated SST 2 and SST 3 instances. **Their exact service unit names are not included in the exported YAML**, so first display what is available:
+The service unit files for SST 2 and SST 3 are available in [`../configs/systemd/`](../configs/systemd/). If not already installed:
 
 ```bash
-systemctl list-unit-files | grep -E 'open5gs.*(smf|upf)|smf[23]|upf[23]'
+sudo cp configs/systemd/open5gs-*.service /etc/systemd/system/
+sudo systemctl daemon-reload
 ```
 
-If the following units exist on your Ubuntu, start them:
+Start the dedicated slice core services:
 
 ```bash
 sudo systemctl start open5gs-smf2d open5gs-smf3d open5gs-upf2d open5gs-upf3d
 ```
 
-The previous command is **conditional**: use the actual service names if different; never assume these are installed by Open5GS itself.
-
-## 2. Verify the UPF interfaces, forwarding and traffic control
+Check their status:
 
 ```bash
-ip -br addr show
-sysctl net.ipv4.ip_forward
-sudo iptables -t nat -S POSTROUTING
-sudo tc qdisc show dev ogstun2
-sudo tc qdisc show dev ogstun3
+systemctl status open5gs-smf2d open5gs-smf3d open5gs-upf2d open5gs-upf3d --no-pager
 ```
 
-Expected addresses: `ogstun` → `10.45.0.1/16`; `ogstun2` → `10.46.0.1/16`; `ogstun3` → `10.47.0.1/16`. The report describes NAT and `tc` shaping, but does **not** provide the exact original setup commands. Do not blindly add interfaces or duplicate NAT rules on an existing VM.
+## 2. Set up UPF TUN interfaces, forwarding and traffic control
+
+Run the automated network setup script provided in [`../scripts/setup-network.sh`](../scripts/setup-network.sh):
+
+```bash
+sudo ./scripts/setup-network.sh start
+```
+
+Verify that interfaces (`ogstun`, `ogstun2`, `ogstun3`), forwarding, and traffic control rules are active:
+
+```bash
+sudo ./scripts/setup-network.sh status
+```
 
 ## 3. Start the gNB (terminal 1)
 

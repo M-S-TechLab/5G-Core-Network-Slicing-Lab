@@ -1,0 +1,13 @@
+[Unit]
+Description=iPerf3 Servers for Network Slicing (Ports 5201, 5202, 5203)
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/bin/bash -c "/usr/bin/iperf3 -s -D -B 10.47.0.1 -p 5201 && /usr/bin/iperf3 -s -D -B 10.45.0.1 -p 5202 && /usr/bin/iperf3 -s -D -B 10.46.0.1 -p 5203"
+ExecStop=/usr/bin/pkill -f "iperf3 -s"
+Restart=on-failure
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

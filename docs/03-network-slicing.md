@@ -135,7 +135,7 @@ sessions:
 
 ## 7. Subscriber QoS settings in MongoDB
 
-The supplied subscriber export includes three profiles (IMSI ending `001`, `002` and `003`). All three advertise the same three SSTs. The first two correspond to the operational UERANSIM UE configurations. The third subscriber exists in the database export, but no corresponding operational UE3 configuration is included here.
+The supplied subscriber export includes three profiles (IMSI ending `001`, `002` and `003`). All three advertise the same three SSTs, matching the operational UERANSIM configurations ([`ue1.yaml`](../configs/ueransim/ue1.yaml), [`ue2.yaml`](../configs/ueransim/ue2.yaml), and [`ue3.yaml`](../configs/ueransim/ue3.yaml)).
 
 For the exported profiles, the following values are configured on the `internet` session:
 
@@ -190,9 +190,9 @@ Actual UE registration and session success should be demonstrated with gNB/UE te
 ## 10. Reproduction notes and limitations
 
 - The YAML configuration files are published under [`../configs/`](../configs/).
-- Starting secondary SMF/UPF instances requires the specific launch procedure or systemd units used in the laboratory; that part must still be documented.
-- Host setup for `ogstun`, `ogstun2`, `ogstun3`, forwarding, NAT and any relevant firewall rules must be documented separately.
-- The MongoDB subscriber JSON is an export of laboratory data, **not** a guaranteed direct-import script. A reliable import/initialization procedure remains to be documented.
+- Starting secondary SMF/UPF instances is managed via systemd units under [`../configs/systemd/`](../configs/systemd/).
+- Host setup for `ogstun`, `ogstun2`, `ogstun3`, forwarding, NAT and traffic control is automated via [`../scripts/setup-network.sh`](../scripts/setup-network.sh).
+- The MongoDB subscriber JSON is an export of laboratory data, and can also be provisioned dynamically via [`../scripts/provision.py`](../scripts/provision.py).
 - Intended eMBB, URLLC and MIoT service labels should be distinguished from any measured KPIs.
 
 ## References
