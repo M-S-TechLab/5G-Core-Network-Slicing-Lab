@@ -3,14 +3,14 @@
 """
 5G UE Provisioning and Network Slicing (Open5GS & UERANSIM)
 
-Compliant with 3GPP TS 23.501 specifications for three network slices:
-  - Slice 1 (SST 1): eMBB  (5QI=6,  Priority=4,  Bandwidth=1 Gbps / 100 Mbps)
-  - Slice 2 (SST 2): URLLC (5QI=1,  Priority=1,  Bandwidth=100 Mbps)
+Subscriber profile configuration for three 5G network slices:
+  - Slice 1 (SST 1): eMBB  (5QI=6, Priority=4, Bandwidth=1 Gbps / 100 Mbps)
+  - Slice 2 (SST 2): URLLC (5QI=1, Priority=1, Bandwidth=100 Mbps)
   - Slice 3 (SST 3): MIoT  (5QI=70, Priority=12, Bandwidth=1 Mbps / 512 Kbps)
 
 Usage:
-  python3 provision_ues.py [N]          # Adds N new UEs (default: 1)
-  python3 provision_ues.py update-all   # Updates all existing UEs
+  python3 provision.py [N]          # Adds N new UEs (default: 1)
+  python3 provision.py update-all   # Updates all existing UEs
 """
 
 import os
