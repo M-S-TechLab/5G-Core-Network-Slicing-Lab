@@ -153,8 +153,6 @@ Developed as a collaborative university networking and cloud infrastructures pro
 
 ## License
 
-## License
-
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 Open5GS, UERANSIM, and other third-party software retain their respective licenses.
 
