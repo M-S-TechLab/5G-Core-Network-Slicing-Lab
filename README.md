@@ -61,6 +61,45 @@ All components run on the same Ubuntu guest. Control-plane signaling uses NGAP/S
 
 The values above are the configured subscriber QoS profiles. Slice labels describe the intended workload classes; they do **not** by themselves establish compliance with commercial URLLC or massive-IoT performance requirements.
 
+## Automated UE Provisioning
+
+The [`scripts/provision.py`](scripts/provision.py) script automates subscriber provisioning for Open5GS and UERANSIM.
+
+It registers UE profiles in the MongoDB `open5gs.subscribers` collection and generates the corresponding UERANSIM YAML configuration files.
+
+Each generated UE is configured with:
+
+- Unique IMSI, IMEI, and IMEISV identifiers.
+- Authentication credentials for the laboratory environment.
+- Three network slice subscriptions (SST 1, 2, and 3).
+- Slice-specific 5QI and ARP priority parameters.
+- Uplink and downlink Session-AMBR limits.
+- Three IPv4 PDU sessions using the `internet` DNN.
+
+### Requirements
+
+Python 3, PyMongo, PyYAML, and a running local MongoDB instance are required. The UERANSIM configuration directory and gNB search addresses must be adapted to the target environment.
+
+### Usage
+
+Create two new UEs:
+
+```bash
+python3 provision.py 2
+```
+
+This creates two additional subscribers, assigning the next available UE indices.
+
+Update existing subscribers:
+
+```bash
+python3 provision.py update-all
+```
+
+**Warning:** The update operation replaces existing subscriber profiles and overwrites the corresponding UE YAML files. Back up existing configurations before execution.
+
+The script uses demonstration authentication credentials intended exclusively for the virtual 5G laboratory.
+
 ## Experiments
 
 The technical project report describes six experiments:
