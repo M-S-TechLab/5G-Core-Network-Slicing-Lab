@@ -41,3 +41,4 @@ flowchart TB
   UPF1 --> APP1["Nextcloud / iperf3"]
   UPF2 --> APP2["Asterisk / Twinkle / iperf3"]
   UPF3 --> APP3["Mosquitto MQTT / iperf3"]
+```
