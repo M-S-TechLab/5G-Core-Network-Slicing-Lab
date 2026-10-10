@@ -1,0 +1,23 @@
+logger:
+  file:
+    path: /var/log/open5gs/upf3.log
+
+global:
+  max:
+    ue: 1024
+
+upf:
+  pfcp:
+    server:
+      - address: 127.0.0.9
+  gtpu:
+    server:
+      - address: 127.0.0.9
+  session:
+    - subnet: 10.47.0.0/16
+      gateway: 10.47.0.1
+      dev: ogstun3
+  metrics:
+    server:
+      - address: 127.0.0.9
+        port: 9092
